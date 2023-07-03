@@ -1,0 +1,363 @@
+openapi: "3.0.0"
+
+
+info:
+  title: "Players Service API Documentation"
+  description: "This is the API Documentation for Player CRUD Service"
+  version: "0.5.0"
+  contact:
+    name: Agnes
+    email: agnes.septilia@gmail.com
+  
+
+servers:
+  - url: 'http://localhost:4000'
+    description: 'Local Server'
+    
+    
+paths:
+
+  ### API to test connection
+  /api:
+    get:  
+      summary: API connection test 
+      description: API to check whether the connection with API is succeed
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxPlainText"
+
+
+
+  ### API to check version:v1
+  /api/v1:
+    get:  
+      summary: API version connection test 
+      description: API to check whether the particular version of API is available
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxPlainText"
+
+
+
+  ### API for players
+  /api/v1/players:
+    
+    ## get all player data
+    get:
+      summary: Get player data
+      description: API to get all players data. <br>
+                  Use params (optional) to search for specific player criteria. 
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/email"
+        - $ref: "#/components/parameters/experience"
+        - $ref: "#/components/parameters/level"
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxObjectWithData"
+          
+
+    ## create new player
+    post:
+      summary: Create player data
+      description: API to create new player data 
+      requestBody:
+        $ref: "#/components/requestBodies/newData"
+      responses:
+        201:
+          $ref: "#/components/responses/status2xxObjectWithData"       
+        400:
+          $ref: "#/components/responses/status4xxObjectWithMessage"
+
+
+
+  ### API for players that are searched by ID
+  /api/v1/players/{id}:
+    parameters:
+     - $ref : "#/components/parameters/id"
+    
+
+    ## get player data by ID 
+    get:
+      summary: Get player data by ID
+      description: API to get player data by their ID 
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxObjectWithData"
+        400:
+          $ref: "#/components/responses/status4xxObjectWithMessage"
+
+
+    ## update player data by ID
+    put:
+      summary: Update player data by ID
+      description: API to update player data by their ID 
+      requestBody:
+          $ref: "#/components/requestBodies/updateData"
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxObjectWithMessage"
+        400:
+          $ref: "#/components/responses/status4xxObjectWithMessage"
+        500:
+          $ref: "#/components/responses/status5xxObjectWithMessage"
+
+
+    ## delete player data by ID
+    delete:
+      summary: Delete player data by ID
+      description: API to delete player data by their ID 
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxObjectWithMessage"
+        400:
+          $ref: "#/components/responses/status4xxObjectWithMessage"
+
+
+
+  ### API for players that are searched by ID and experience
+  /api/v1/players/exp/{id}:
+
+    ## update experience data
+    post:
+      summary: Update experience data
+      description: API to update experience data of a player with declared ID
+      parameters:
+        - $ref : "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/experience"
+      responses:
+        200:
+          $ref: "#/components/responses/status2xxObjectWithMessage"     
+        400:
+          $ref: "#/components/responses/status4xxObjectWithMessage"
+        404:
+          $ref: "#/components/responses/status4xxObjectWithMessage"
+
+
+
+############################################################################
+
+
+
+#### Components used for API documentation
+components:
+
+  ### Schemas ###
+  schemas:
+    ## Schema to show all player list  
+    playerList:
+      type: object
+      properties:
+        result:
+          type: string
+        data:
+          type: array
+          items: 
+            type: object 
+            properties: 
+              id:
+                type: integer
+                description: player id
+                example: 1
+              username:
+                type: string
+                description: player username
+                example: playerName
+              email:
+                type: string
+                description: player email
+                example: player@email.com
+              password:
+                type: string
+                description: player encrypted password
+                example: <hashed password>
+              experience:
+                type: integer
+                description: player experience
+                example: 100000
+              lvl:
+                type: integer
+                description: player level
+                example: 100
+              createdAt:
+                type: string
+                description: player created at
+                example: "2023-06-24T14:25:11.327Z"
+              updatedAt:
+                type: string
+                description: player updated at
+                example: "2023-06-24T14:25:11.327Z"
+
+    ## Schema for success HTTP response
+    successHandling:
+      type: object
+      properties:
+        result:
+          type: string
+          description: error result
+          example: Success
+        message:
+          type: string
+          description: error result
+          example: "[Example] Player data is successfully updated"
+
+    ## Schema for failed HTTP response 
+    errorHandling:
+      type: object
+      properties:
+        result:
+          type: string
+          description: error result
+          example: Failed
+        message:
+          type: string
+          description: error result
+          example: "[Example] Failed to upload"
+  
+
+  ### Parameters ###
+  parameters:
+    id:
+      in: path
+      name: id
+      schema:
+        type: integer
+      required: true
+      description: player id
+    
+    username:
+      in: query
+      name: username
+      schema:
+        type: string
+      description: player username
+
+    email:
+      in: query
+      name: email
+      schema:
+        type: string
+      description: player email
+    
+    experience:
+      in: query
+      name: experience
+      schema:
+        type: integer
+        minimum: 0
+      description: player experience
+    
+    level:
+      in: query
+      name: lvl
+      schema:
+        type: integer
+        minimum: 0
+      description: player level
+
+
+  ### Request Bodies ###
+  requestBodies:
+    
+    ## Request Body for all input where username, email, and password are not required, 
+    ## because the given script already have each own handler
+    newData:
+      description: Create player data by filling below fields
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties: 
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  description: minimal 6 characters
+                  type: string
+                experience:
+                  type: integer
+          encoding:
+            email:
+              allowReserved: true
+            password:
+              allowReserved: true
+
+    ## Request Body for all input where the username, email, and password are required
+    ## because the given script didn't have delared handler
+    updateData:
+      description: Update player data by filling below fields
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required: [username, email, password]
+            properties: 
+                username:
+                  type: string
+                email:
+                  type: string
+                password: 
+                  type: string
+                experience:
+                  type: integer
+          encoding:
+            email:
+              allowReserved: true
+            password:
+              allowReserved: true
+
+    ## Request Body for experience only input
+    experience:
+      description: Update player experience data
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required: [exp]
+            properties: 
+                exp:
+                  type: integer
+
+
+  ### Responses ###
+  responses:
+    status2xxPlainText:
+      description: Show response when the API is successfully hit. <br>
+                  Response is shown in plain text.
+      content:
+        text/plain:
+          schema:
+            type: "string"
+            example: "API response message"
+
+    status2xxObjectWithData:
+      description: Show response of related player data.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/playerList"
+
+    status2xxObjectWithMessage:
+      description: Show response to indicate that the operation has succeed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/successHandling"
+
+    status4xxObjectWithMessage:
+      description: Show response if there's error in user side. <br>
+                  Please recheck the input of request bodies or parameters. 
+      content: 
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorHandling"
+
+    status5xxObjectWithMessage:
+      description: Show response if there's error in server side.
+      content: 
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorHandling"
+  
